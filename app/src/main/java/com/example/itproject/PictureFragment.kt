@@ -1,0 +1,95 @@
+package com.example.itproject
+
+import android.os.Bundle
+import android.os.Handler
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import de.hdodenhof.circleimageview.CircleImageView
+
+class PictureFragment : Fragment() {
+
+    private lateinit var mainButton : CircleImageView
+    private lateinit var cameraButton : ImageView
+    private lateinit var galleryButton : ImageView
+    private lateinit var background_view : View
+    private lateinit var disappearance_left : Animation
+    private lateinit var disappearance_right : Animation
+    private lateinit var anim_reduction : Animation
+    private lateinit var anim_appearance : Animation
+    private lateinit var anim_moving_right : Animation
+    private lateinit var anim_disappearance : Animation
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        val view : View = inflater.inflate(R.layout.frame_picture, container, false)
+
+        val anim_moving_left = AnimationUtils.loadAnimation(activity, R.anim.moving_left) //왼쪽으로 움직이며 생성
+        anim_moving_right = AnimationUtils.loadAnimation(activity, R.anim.moving_right) //오른쪽으로 움직이며 소멸
+
+        mainButton = view.findViewById(R.id.main_button_picture)
+        cameraButton = view.findViewById(R.id.imageview_camera_picture)
+        galleryButton = view.findViewById(R.id.imageview_gallery_picture)
+        background_view = view.findViewById(R.id.view_frame_picture)
+        disappearance_left = AnimationUtils.loadAnimation(activity, R.anim.disappearance_left)
+        disappearance_right = AnimationUtils.loadAnimation(activity, R.anim.disappearance_right)
+        anim_reduction = AnimationUtils.loadAnimation(activity, R.anim.reduction)
+        anim_appearance = AnimationUtils.loadAnimation(activity, R.anim.appearance)
+        anim_disappearance = AnimationUtils.loadAnimation(activity, R.anim.disappearance)
+
+        cameraButton.animation = anim_appearance
+        galleryButton.animation = anim_moving_left
+
+        mainButton.setOnClickListener {
+
+            val fragmentManager : FragmentManager = activity!!.supportFragmentManager
+
+            cameraButton.clearAnimation()
+            galleryButton.clearAnimation()
+
+            background_view.alpha = 0f
+
+            mainButton.animation = anim_reduction
+            cameraButton.animation = disappearance_left
+            galleryButton.animation = disappearance_right
+
+            Handler().postDelayed({
+                fragmentManager.beginTransaction().remove(PictureFragment@this).commit()
+                MainActivity().setCount(0)
+            }, anim_reduction.duration)
+
+        }
+
+        return view
+    }
+
+    fun back() {
+
+        val fragmentManager : FragmentManager= activity!!.supportFragmentManager
+        mainButton.clearAnimation()
+        galleryButton.clearAnimation()
+        cameraButton.clearAnimation()
+
+        //MainActivity().setCount(1)
+
+        background_view.alpha = 0f
+        mainButton.animation = anim_reduction
+        cameraButton.animation = anim_disappearance
+
+        Handler().postDelayed({
+            fragmentManager.beginTransaction().remove(PictureFragment@this).commit()
+            fragmentManager.beginTransaction().add(R.id.framelayout_main, MainFragment()).commit()
+        }, anim_reduction.duration)
+
+    }
+
+}
